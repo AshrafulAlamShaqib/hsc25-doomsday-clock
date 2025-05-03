@@ -4,7 +4,7 @@ A dead-simple countdown timer to remind me of the upcoming **HSC Exam on June 26
 
 ## 🚀 Live Preview
 
-[Click to view the live app]()
+[Click to view the live webapp](https://ashrafulalamshaqib.github.io/hsc25-doomsday-clock/)
 
 ## 🧠 Features
 
