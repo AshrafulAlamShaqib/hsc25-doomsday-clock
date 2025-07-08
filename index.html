@@ -1,67 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>HSC'25 Doomsday Clock</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HSC Exam Countdown</title>
   <style>
+    :root {
+      --bg-color: #121212;
+      --text-color: #f4f4f4;
+      --table-bg: #1e1e1e;
+      --highlight-color: #ff6b6b;
+      --border-color: #333;
+    }
+
+    body.light-mode {
+      --bg-color: #ffffff;
+      --text-color: #000000;
+      --table-bg: #f0f0f0;
+      --highlight-color: #d62828;
+      --border-color: #ccc;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background: #f2f2f2;
+      padding: 2rem;
+      background-color: var(--bg-color);
+      color: var(--text-color);
+      transition: background-color 0.3s, color 0.3s;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 1rem;
+      background-color: var(--table-bg);
+    }
+
+    th, td {
+      padding: 1rem;
+      text-align: left;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    th {
+      background-color: #333;
+      color: white;
+    }
+
+    .highlight {
+      color: var(--highlight-color);
+      font-weight: bold;
+      text-decoration: underline;
+    }
+
+    #themeToggle {
+      cursor: pointer;
+      font-size: 1.5rem;
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+    }
+
+    .toggle-wrapper {
       display: flex;
-      flex-direction: column;
       align-items: center;
-      justify-content: center;
-      height: 100vh;
-      margin: 0;
+      gap: 1rem;
+      margin-top: 1rem;
     }
 
-    h1 {
-      color: #333;
+    .bonus-hidden .bonus-col {
+      display: none;
     }
 
-    #timer {
-      font-size: 2rem;
-      color: #ff4444;
-      margin-top: 20px;
-    }
+    @media (max-width: 600px) {
+      th, td {
+        padding: 0.5rem;
+        font-size: 0.9rem;
+      }
 
-    #deadline-label {
-      margin-top: 10px;
-      font-size: 1rem;
-      color: #555;
+      h1 {
+        font-size: 1.5rem;
+      }
+
+      #themeToggle {
+        font-size: 1.2rem;
+        top: 0.5rem;
+        right: 0.5rem;
+      }
     }
   </style>
 </head>
-<body>
+<body class="bonus-hidden">
+  <div id="themeToggle">🌙</div>
+  <h1>📘 HSC 2025 Exam Countdown</h1>
 
-  <h1>HSC june 26, 2025</h1>
-  <div id="timer">Loading...</div>
+  <div class="toggle-wrapper">
+    <label><input type="checkbox" id="bonusToggle" /> 🎁 Show Bonus Time</label>
+  </div>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Subject</th>
+        <th>Date</th>
+        <th>Time Left</th>
+        <th class="bonus-col">Bonus Time</th>
+      </tr>
+    </thead>
+    <tbody id="examTable"></tbody>
+  </table>
 
   <script>
-    // You can write your countdown logic here
-    const deadline = new Date("2025-06-26T00:00:00"); // change this
+    const exams = [
+      { subject: 'Physics 1st (P1)', date: '2025-07-10T00:00:00' },
+      { subject: 'Physics 2nd (P2)', date: '2025-07-13T00:00:00' },
+      { subject: 'Chemistry 1st (C1)', date: '2025-07-20T00:00:00' },
+      { subject: 'Chemistry 2nd (C2)', date: '2025-07-22T00:00:00' },
+      { subject: 'Engg. Drawing 1st (ED1)', date: '2025-07-24T00:00:00' },
+      { subject: 'Engg. Drawing 2nd (ED2)', date: '2025-07-27T00:00:00' },
+      { subject: 'Math 1st (M1)', date: '2025-08-04T00:00:00' },
+      { subject: 'Math 2nd (M2)', date: '2025-08-06T00:00:00' },
+    ];
 
-    function updateTimer() {
-      const now = new Date();
-      const diff = deadline - now;
+    const table = document.getElementById('examTable');
 
-      if (diff <= 0) {
-        document.getElementById("timer").textContent = "Deadline reached!";
-        return;
-      }
-
-      const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-      const hours = Math.floor((diff / (1000 * 60 * 60)) % 24);
-      const minutes = Math.floor((diff / (1000 * 60)) % 60);
-      const seconds = Math.floor((diff / 1000) % 60);
-
-      document.getElementById("timer").textContent =
-        `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    function formatTime(ms) {
+      const d = Math.floor(ms / (1000 * 60 * 60 * 24));
+      const h = Math.floor((ms / (1000 * 60 * 60)) % 24);
+      const m = Math.floor((ms / (1000 * 60)) % 60);
+      const s = Math.floor((ms / 1000) % 60);
+      return `${d}d ${h}h ${m}m ${s}s`;
     }
 
-    setInterval(updateTimer, 1000);
-    updateTimer(); // Initial call
-  </script>
+    function updateCountdown() {
+      table.innerHTML = '';
+      const now = new Date();
 
+      exams.forEach(exam => {
+        const examMidnight = new Date(exam.date);
+        const examTenAM = new Date(examMidnight);
+        examTenAM.setHours(10, 0, 0, 0);
+
+        const diffMain = examMidnight - now;
+        const diffBonus = examTenAM - now;
+
+        let mainText = '';
+        let bonusText = '';
+
+        if (diffMain >= 0) {
+          const isSoon = diffMain <= 3 * 24 * 60 * 60 * 1000;
+          mainText = `<td class="${isSoon ? 'highlight' : ''}">${formatTime(diffMain)}</td>`;
+        } else {
+          mainText = `<td>✅ Done</td>`;
+        }
+
+        if (diffBonus >= 0) {
+          bonusText = `<td class="bonus-col">${formatTime(diffBonus)}</td>`;
+        } else {
+          bonusText = `<td class="bonus-col">✅ Bonus Over</td>`;
+        }
+
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${exam.subject}</td>
+          <td>${examMidnight.toLocaleDateString('en-GB', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' })}</td>
+          ${mainText}
+          ${bonusText}
+        `;
+        table.appendChild(tr);
+      });
+    }
+
+    updateCountdown();
+    setInterval(updateCountdown, 1000);
+
+    // Theme toggle
+    const toggle = document.getElementById('themeToggle');
+    toggle.addEventListener('click', () => {
+      document.body.classList.toggle('light-mode');
+      toggle.textContent = document.body.classList.contains('light-mode') ? '☀️' : '🌙';
+    });
+
+    // Bonus column toggle
+    const bonusToggle = document.getElementById('bonusToggle');
+    bonusToggle.addEventListener('change', () => {
+      document.body.classList.toggle('bonus-hidden', !bonusToggle.checked);
+    });
+  </script>
 </body>
 </html>
